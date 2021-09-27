@@ -389,7 +389,8 @@ class GeologyModel:
         xmlWriter.SetFileName(path)
         xmlWriter.SetInputData(self.VTK_Grids)
         xmlWriter.Write()
-        print('Done!')
+        print('\nvtu file created !\n')
+        return path
 
     def Write2VTP(self):
         self.Write2VTU()
@@ -410,6 +411,7 @@ class GeologyModel:
         writer.SetInputData(polydata)
         writer.Write()
         print("vtp file created.")
+        return outFile
 
     def AppendScalarData2VTK(self,name,numpy_array):
         #* Append scalar cell data (numpy array) into vtk object, should not directly called by user
@@ -431,6 +433,61 @@ class GeologyModel:
     # MZ::Write spatial data at a specified output format:
     # MZ::Writes rows "linestring" at given (j,k) and varying i indices
     #####################################################################
+    def write_simpleCPG_GRDECL(self, filename=''):
+        # MZ:: Dictionary keyword+data storing Grid attributes to be written
+        Grid = self.GRDECL_Data;
+        Nx,Ny,Nz=Grid.NX,Grid.NY,Grid.NZ
+        COORD = Grid.COORD.reshape((Nx + 1, Ny + 1, 6), order="C")
+        ZCORN = Grid.ZCORN.reshape((2 * Nx, 2 * Ny, 2 * Nz), order="F")
+        # Output format for floats
+        floatformat = "%5.2f"
+        # Open file  filename path
+        if filename!='':
+            self.fname = filename;
+        assert self.fname!='',"AN OUPTU FILENAME MUST BE SPECIFIED TO WRITE YOUR CPG"
+
+        f = open(self.fname, 'w')
+        print('[Output] Writing "%s" SIMPLE GRDECL example file..' % self.fname, end='')
+        # Write DIMENSIONS
+        f.write("SPECGRID\n")
+        f.write(str(Nx) + " " + str(Ny) + " " + str(Nz) + " 1 F\n/")
+
+
+        # Write Grid information using merged dictionaries,
+        # COORD
+        # print("\n Writing COORD")
+        f.write("\nCOORD")
+        # np.savetxt(f, Grid.COORD, fmt='%3.2f', delimiter=',')
+        for j in range(Ny + 1):
+            for i in range(Nx + 1):
+                f.write("\n")
+                for ind in range(5):
+                    f.write(custom_format(floatformat,COORD[i,j,ind])+" ")
+                f.write(custom_format(floatformat, COORD[i, j, 5]))
+        f.write("\n/")
+
+        # print("\n Writing ZCORN")
+        f.write("\nZCORN")
+        # np.savetxt(f, Grid.ZCORN, fmt='%3.2f', delimiter=' ')
+        for k in range(2*Nz):
+            for i in range(2*Nx):
+                for j in range(0,2*Ny):
+                    f.write("\n")
+                    f.write(custom_format(floatformat,ZCORN[i,j,k])+ " ")
+        f.write("\n/\n")
+
+        # Write Spatial information using merged dictionaries,
+        for key, value in self.GRDECL_Data.SpatialDatas.items():
+            print(" Writing %s"%key)
+            f.write(key)
+            write_grid_data_forGRDECL(f, Grid, value, floatformat)
+            f.write("\n")
+
+        # Close file
+        f.close()
+        print("...done")
+
+
     def writeCartGrid_forGRDECL(self,filename):
         # MZ:: Dictionary keyword+data storing Grid attributes to be written
         Grid=self.GRDECL_Data;
@@ -519,7 +576,6 @@ class GeologyModel:
                 list_ind.append(list_tmp)
         return list_ind
 
-
     def compute_bdry_indices(self,direction):
         Grid=self.GRDECL_Data
         Min_ind=[];        Max_ind=[]
@@ -552,8 +608,6 @@ class GeologyModel:
                     for i in rangeX:
                         Max_ind.append(i+Grid.NX*(j+k*Grid.NY))
         return  Min_ind,Max_ind
-
-
 
     def nz_to_fault(self,ix):
         nz=0
@@ -743,7 +797,7 @@ class GeologyModel:
         #     self.UpdateCellData("Vz", array=V[2, :].ravel(order='F'))
         return GradP,V
 
-    def plot_scalar(self, scalar=None,ITK=True,ext='vtu',slicing=False,add_log_scale=False):
+    def plot_scalar(self, scalar=None,ITK=True,ext='vtp',slicing=False,add_log_scale=False):
         try:
             import pyvista as pv
         except ImportError:
@@ -761,11 +815,12 @@ class GeologyModel:
         # Convert to vtk unstructured grid data
         self.GRDECL2VTK()
         # Write GRDECL cartesian model to vtk file
-        self.Write2VTU()
+        filename=self.Write2VTP()
 
         # Plot vtk data
-        filename = os.path.splitext(self.fname)[0] + '.' + ext
+        # filename = os.path.splitext(self.fname)[0] + '.' + ext
         mesh = pv.read(filename)
+        print("plotting file:%s"%filename)
         if ITK and (not slicing):
             pl = pv.PlotterITK()
         else:
@@ -973,8 +1028,28 @@ def write_grid_data_forGRDECL(f,Grid,data,data_format):
             linestring=merge_duplicates_forGRDECL(linestring)
 
             f.write("\n"+linestring)
-    f.write("/")
+    f.write("\n/")
 
+def write_COORD_forGRDECL(f,Grid,data,data_format):
+    # Add space between scalar values
+    data_format=data_format+" "
+    for j in range(Grid.NY+1):
+        for i in range(Grid.NX+1):
+            # Set local flat indices range for i in (0,NX-1)
+            i0 = 0 + (Grid.NX) * (j + k * (Grid.NY))
+            iend = Grid.NX - 1 + (Grid.NX) * (j + k * (Grid.NY))
+
+            # Write First Elt of linestring at new line
+            linestring="\n"+custom_format(data_format,data[i0])
+            # Append next ELts: from i0+1 to iend
+            for i in range(i0+1, iend+1):
+                linestring=linestring+ custom_format(data_format,data[i])
+
+            # Find duplicates and merge them in string "nbelt*Elt"
+            linestring=merge_duplicates_forGRDECL(linestring)
+
+            f.write("\n"+linestring)
+    f.write("/")
 # MZ::Change output format to "%d " for integer values
 def custom_format(data_format,data):
     if (int(data)==data):

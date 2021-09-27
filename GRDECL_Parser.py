@@ -143,8 +143,8 @@ class GRDECL_Parser:
         #Read whole file into list
         f=open(self.fname)
         contents=f.read()
-        contents=RemoveCommentLines(contents,commenter='--')
-        contents_in_block=contents.strip().split('/') #Sepeart input file by slash /
+        contents=RemoveCommentLines(contents,commenter='--') # skip comments and blank lines
+        contents_in_block=contents.strip().split('/') #Seperate input blocks by slash /
         contents_in_block = [x for x in contents_in_block if x]#Remove empty block at the end
         NumKeywords=len(contents_in_block)
 
