@@ -1,0 +1,21 @@
+name: pyUPSCALE_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - lxml
+  - pip:
+    - git+git://github.com/pyvista/pyvista@master
+    - numpy
+    - scipy
+    - matplotlib
+    - pyct
+    - pandas>=1.1.4
+    - trimesh
+    - ipyvtk-simple>=0.1.2
+    - itkwidgets>=0.25.2
+    - colorcet
+    - cmocean
+    - imageio>=2.5.0
+    - imageio-ffmpeg
