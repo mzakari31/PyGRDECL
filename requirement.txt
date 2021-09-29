@@ -79,6 +79,7 @@ parso @ file:///home/conda/feedstock_root/build_artifacts/parso_1617148930513/wo
 pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1602535608087/work
 pickleshare @ file:///home/conda/feedstock_root/build_artifacts/pickleshare_1602536217715/work
 Pillow==8.3.1
+pip==21.2.2
 prometheus-client @ file:///home/conda/feedstock_root/build_artifacts/prometheus_client_1622586138406/work
 prompt-toolkit @ file:///home/conda/feedstock_root/build_artifacts/prompt-toolkit_1623977816122/work
 ptyprocess @ file:///home/conda/feedstock_root/build_artifacts/ptyprocess_1609419310487/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl
@@ -102,6 +103,7 @@ requests==2.26.0
 scipy @ file:///home/conda/feedstock_root/build_artifacts/scipy_1628206382406/work
 scooby==0.5.7
 Send2Trash @ file:///home/conda/feedstock_root/build_artifacts/send2trash_1624366715919/work
+setuptools==49.6.0.post20210108
 Shapely @ file:///home/conda/feedstock_root/build_artifacts/shapely_1628205368277/work
 six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
 snowballstemmer==2.1.0
@@ -127,6 +129,7 @@ urllib3==1.26.6
 vtk==9.0.3
 wcwidth @ file:///home/conda/feedstock_root/build_artifacts/wcwidth_1600965781394/work
 webencodings==0.5.1
+wheel==0.36.2
 widgetsnbextension @ file:///home/conda/feedstock_root/build_artifacts/widgetsnbextension_1605475534911/work
 wslink==0.2.0
 zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1625284368454/work
